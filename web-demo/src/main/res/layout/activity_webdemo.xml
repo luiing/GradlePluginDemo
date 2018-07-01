@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button android:id="@+id/bt_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="mode"
+        />
+    <Button android:id="@+id/bt_baidu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="baidu"
+        />
+    <Button android:id="@+id/bt_bailian"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="bailian"
+        />
+    <Button android:id="@+id/bt_jd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="jingdong"
+        />
+    <Button android:id="@+id/bt_sina"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="sina"
+        />
+    <Button android:id="@+id/bt_qq"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="qq"
+        />
+</LinearLayout>

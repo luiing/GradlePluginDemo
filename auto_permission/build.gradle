@@ -1,0 +1,26 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:3.0.0'
+    compile 'org.javassist:javassist:3.22.0-GA'
+    compile 'com.android.tools.build:transform-api:1.5.0'
+}
+
+repositories{
+    jcenter()
+    mavenCentral()
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.groupId = "com.uis.autopermission"
+            pom.artifactId = "AutoPermission"
+            pom.version = "0.0.1-SNAPSHOT"
+            repository(url: uri('../repo'))
+        }
+    }
+}

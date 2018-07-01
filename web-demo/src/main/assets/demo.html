@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <meta content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+        <meta http-equiv="x-dns-prefetch-control" content="on">
+        <title>Jsbridge Demo</title>
+    </head>
+    <body>
+        <p><input type="button" value="api" onclick="loadApi();"/></p>
+        <p><input type="button" value="method" onclick="loadMethod();"/></p>
+        <p><xmp id="show"></xmp></p>
+    </body>
+    <script>
+
+        function loadApi() {
+            window.CTJSBridge.LoadAPI(
+                'apiName'
+                , {
+                    param: 'call api',
+                    name: 'api'
+                 }
+                , {
+                    success:data=>{
+                    document.getElementById("show").innerHTML = "result = " + data
+                    },
+                    fail: () => {},
+                    progress: () => {}
+                }
+            );
+        }
+
+        function loadMethod() {
+            window.CTJSBridge.LoadMethod(
+                'tag'
+                ,'methodName'
+                , {
+                    param: 'call method',
+                    name: 'tag-method'
+                 }
+                , {
+                    success:data=>{
+                    document.getElementById("show").innerHTML = "result = " + data
+                    },
+                    fail: () => {},
+                    progress: () => {}
+                }
+            );
+        }
+    </script>
+</html>
