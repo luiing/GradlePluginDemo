@@ -1,0 +1,101 @@
+apply plugin: 'groovy'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven'
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:3.0.0'
+    compile 'org.javassist:javassist:3.22.0-GA'
+    compile 'com.android.tools.build:transform-api:1.5.0'
+}
+
+repositories{
+    jcenter()
+    mavenCentral()
+}
+
+uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.groupId = "com.uis.methodtimer"
+                pom.artifactId = "MethodTimer"
+                pom.version = "0.0.1-SNAPSHOT"
+                repository(url: uri('../repo'))
+            }
+        }
+    }
+
+Properties propLocal = new Properties()
+propLocal.load(project.rootProject.file('local.properties').newDataInputStream())
+
+version="0.0.1"
+group=propLocal.getProperty("bintray.group")
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'jar'
+                name propLocal.getProperty("bintray.mehtod_timer")
+                description propLocal.getProperty("bintray.mehtod_timer")
+                // #CONFIG# // project title
+                url propLocal.getProperty('bintray.mehtod_timer.url')
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id  propLocal.getProperty('bintray.id')//org unique id
+                        // #CONFIG# // your user id (you can write your nickname)
+                        name propLocal.getProperty('bintray.name')//current user id
+                        // #CONFIG# // your user name
+                        email ""
+                        // #CONFIG# // your email
+                    }
+                }
+                scm {
+                    connection propLocal.getProperty('bintray.mehtod_timer.git')
+                    developerConnection propLocal.getProperty('bintray.mehtod_timer.git')
+                    url propLocal.getProperty('bintray.mehtod_timer.url')
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from project.sourceSets.main.groovy.srcDirs
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar, dependsOn: groovydoc) {
+    classifier = 'javadoc'
+    from groovydoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+bintray {
+    user = propLocal.getProperty('bintray.name')
+    key = propLocal.getProperty('bintray.apikey')
+    configurations = ['archives']
+    pkg {
+        userOrg = propLocal.getProperty("bintray.id")
+        repo = "maven"
+        name = propLocal.getProperty("bintray.mehtod_timer")
+        websiteUrl = propLocal.getProperty('bintray.mehtod_timer.url')
+        vcsUrl = propLocal.getProperty('bintray.mehtod_timer.git')
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
