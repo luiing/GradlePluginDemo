@@ -1,5 +1,6 @@
 package com.uis.methodtimer
 
+import javassist.ClassPath
 import javassist.ClassPool
 import javassist.CtClass
 import javassist.CtConstructor
@@ -14,6 +15,7 @@ import org.gradle.api.Project;
 
 class InjectUtil {
     ClassPool pool = ClassPool.getDefault()
+    List<ClassPath> paths = new ArrayList<>()
     String excludes = "android,"//包名
     MethodTimerExtension ext
     String TAG = "com.uis.MethodTimer"
@@ -28,7 +30,7 @@ class InjectUtil {
     }
 
     void injectClass(String path){
-        pool.appendClassPath(path)
+        paths.add(pool.appendClassPath(path))
         File dir = new File(path)
         String[] excludeClass = excludes.split("\\,")
         int excludeSize = excludeClass.length
@@ -88,7 +90,12 @@ class InjectUtil {
     }
 
     void release(){
-        pool.clearImportedPackages()
+        try {
+            pool.clearImportedPackages()
+            paths.each {
+                pool.removeClassPath(it)
+            }
+        }catch (Exception ex){}
     }
 
     void insertMehodTimer(CtClass clas, CtMethod method) throws Exception {
@@ -103,8 +110,11 @@ class InjectUtil {
     }
 
     void initMethodTimer(String path){//not support fanxing
-        try{
-            pool.getCtClass(TAG)
+        try{//pool exists class,then wirte to path
+            CtClass ctClass = pool.getCtClass(TAG)
+            ctClass.writeFile(path)
+            ctClass = pool.makeClass("com.uis.MethodTimerEntity")
+            ctClass.writeFile(path)
             return
         }catch (NotFoundException ex){
         }
