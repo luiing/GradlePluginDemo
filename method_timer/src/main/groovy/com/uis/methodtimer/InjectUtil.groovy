@@ -111,10 +111,13 @@ class InjectUtil {
 
     void initMethodTimer(String path){//not support fanxing
         try{//pool exists class,then wirte to path
-            CtClass ctClass = pool.getCtClass(TAG)
-            ctClass.writeFile(path)
-            ctClass = pool.makeClass("com.uis.MethodTimerEntity")
-            ctClass.writeFile(path)
+            [TAG,"com.uis.MethodTimerEntity"].each {
+                CtClass ctClass = pool.getCtClass(it)
+                if (ctClass != null && ctClass.isFrozen()) {//pool exist the file
+                    ctClass.defrost()
+                }
+                ctClass.writeFile(path)
+            }
             return
         }catch (NotFoundException ex){
         }
