@@ -98,14 +98,10 @@ public class WebDemoActivity extends Activity implements View.OnClickListener{
         if (!SonicEngine.isGetInstanceAllowed()) {
             SonicEngine.createInstance(new SonicRuntimeImpl(getApplication()), new SonicConfig.Builder().build());
         }
-//        SonicRuntimeImpl.submit(new Runnable() {
-//            @Override
-//            public void run() {
-//                for(String url:URLS){
-//                    SonicEngine.getInstance().preCreateSession(url, new SonicSessionConfig.Builder().setSupportLocalServer(true).build());
-//                }
-//            }
-//        });
+
+        for(String url:URLS){
+            SonicEngine.getInstance().preCreateSession(url, new SonicSessionConfig.Builder().setSupportLocalServer(true).build());
+        }
     }
 
     @Override

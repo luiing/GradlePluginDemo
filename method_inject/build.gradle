@@ -1,6 +1,6 @@
 apply plugin: 'groovy'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven'
+apply plugin: 'com.jfrog.bintray'
 
 dependencies {
     compile gradleApi()
@@ -16,20 +16,20 @@ repositories{
 }
 
 uploadArchives {
-        repositories {
-            mavenDeployer {
-                pom.groupId = "com.uis.methodtimer"
-                pom.artifactId = "MethodTimer"
-                pom.version = "0.0.1-SNAPSHOT"
-                repository(url: uri('../repo'))
-            }
+    repositories {
+        mavenDeployer {
+            pom.groupId = "com.uis.methodinject"
+            pom.artifactId = "MethodInject"
+            pom.version = "0.0.1-SNAPSHOT"
+            repository(url: uri('../repo'))
         }
     }
+}
 
 Properties propLocal = new Properties()
 propLocal.load(project.rootProject.file('local.properties').newDataInputStream())
 
-version="0.0.1-alpha3"
+version="0.0.1-alpha"
 group=propLocal.getProperty("bintray.group")
 
 install {
@@ -38,8 +38,8 @@ install {
         pom {
             project {
                 packaging 'jar'
-                name propLocal.getProperty("bintray.mehtod_timer")
-                description propLocal.getProperty("bintray.mehtod_timer")
+                name propLocal.getProperty("bintray.method_inject")
+                description propLocal.getProperty("bintray.method_inject")
                 // #CONFIG# // project title
                 url propLocal.getProperty('bintray.mehtod_timer.url')
                 // Set your license
@@ -91,11 +91,10 @@ bintray {
     pkg {
         userOrg = propLocal.getProperty("bintray.id")
         repo = "maven"
-        name = propLocal.getProperty("bintray.mehtod_timer")
+        name = propLocal.getProperty("bintray.method_inject")
         websiteUrl = propLocal.getProperty('bintray.mehtod_timer.url')
         vcsUrl = propLocal.getProperty('bintray.mehtod_timer.git')
         licenses = ["Apache-2.0"]
         publish = true
     }
 }
-
