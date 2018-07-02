@@ -15,14 +15,14 @@ import org.gradle.api.Project;
 class InjectUtil {
     ClassPool pool = ClassPool.getDefault()
     String excludes = "android,"//包名
-    boolean isMain;
+    MethodTimerExtension ext
     String TAG = "com.uis.MethodTimer"
 
     InjectUtil(Project project,MethodTimerExtension ext) {
         if(ext.exclude != null && !ext.exclude.empty){
             excludes += ext.exclude
         }
-        isMain = ext.isMain
+        this.ext = ext
         pool.appendClassPath(project.android.bootClasspath[0].toString())
         println("-----exclude-----"+excludes)
     }
@@ -103,7 +103,6 @@ class InjectUtil {
     }
 
     void initMethodTimer(String path){//not support fanxing
-        println("-----dirPath-----"+path)
         try{
             pool.getCtClass(TAG)
             return
@@ -114,23 +113,29 @@ class InjectUtil {
         ctClass.addField(CtField.make("public long start;",ctClass))
         ctClass.addField(CtField.make("public String info;",ctClass))
         CtConstructor constructor = new CtConstructor([CtClass.longType, string, string] as CtClass[],ctClass)
-        constructor.setBody("{start = \$1;info = \$2+\"-\"+\$3+\" cost time = %s ms\";}")
+        constructor.setBody("{start = \$1;\ninfo = \$2+\"-\"+\$3+\" cost time = %s ms\";}")
         ctClass.addConstructor(constructor)
         ctClass.writeFile(path)
-
-        ctClass = pool.makeClass("com.uis.MethodTimer")
-        ctClass.addField(CtField.make("private static boolean isMain = ${isMain};",ctClass))
+        ctClass = pool.makeClass(TAG)
+        ctClass.addField(CtField.make("private static boolean isMain = ${ext.isMain};",ctClass))
+        ctClass.addField(CtField.make("private static int timeout = ${ext.timeout};",ctClass))
         ctClass.addField(CtField.make("private static java.util.HashMap countMap = new java.util.HashMap();",ctClass))
         ctClass.addMethod(CtNewMethod.make("public static void startCount(String key,String calssName,String method){\n" +
                 "       if(!isMain || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()){\n" +
                 "           countMap.put(key,new com.uis.MethodTimerEntity(System.currentTimeMillis(),calssName,method));\n" +
                 "       }\n"+
                 "    }",ctClass))
+        //fixed java.lang.VerifyError: Verifier rejected class
+        //java是强类型，同时javassist不支持范型
         ctClass.addMethod(CtNewMethod.make("public static void endCount(String key){\n" +
-                "        com.uis.MethodTimerEntity entity = countMap.remove(key);\n" +
-                "        if((!isMain || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) && entity != null){\n" +
-                "           Object[] cost = new Object[]{String.valueOf(java.lang.System.currentTimeMillis()-entity.start)};\n" +
-                "           android.util.Log.e(\"MethodTimer\",String.format(entity.info,cost));\n" +
+                "        Object entity = countMap.remove(key);\n" +
+                "        if((!isMain || android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) && entity != null && entity instanceof com.uis.MethodTimerEntity){\n" +
+                "           com.uis.MethodTimerEntity v = (com.uis.MethodTimerEntity)entity;\n" +
+                "           long costtime = System.currentTimeMillis() - v.start;\n"+
+                "           if(costtime > timeout){\n" +
+                "               Object[] v1 = new Object[]{String.valueOf(costtime)};\n"+
+                "               android.util.Log.e(\"MethodTimer\",String.format(v.info,v1));\n" +
+                "           }\n"+
                 "       }\n"+
                 "    }",ctClass))
         ctClass.writeFile(path)

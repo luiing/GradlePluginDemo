@@ -47,5 +47,6 @@ apply plugin: 'com.uis.methodtimer'
 methodTimer{
     exclude 'interprocess.uis.com.web_demo.vassonic,interprocess.uis.com.web_demo.PermissionProxy'
     isMain false
+    timeout 10
 }
 
