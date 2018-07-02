@@ -88,7 +88,7 @@ public class WebDemoActivity extends Activity implements View.OnClickListener{
                 cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             }
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-            startActivityForResult(cameraIntent, 100);// CAMERA_OK是用作判断返回结果的标识
+            //startActivityForResult(cameraIntent, 100);// CAMERA_OK是用作判断返回结果的标识
         } catch (Exception ex) {
             ex.printStackTrace();
         }

@@ -28,7 +28,7 @@ android {
 tasks.whenTaskAdded {
     if (it.name.contains("AndroidTest") || it.name.contains("Lint")
             || it.name.contains("UnitTest")) {
-        //it.enabled = false
+        it.enabled = false
     }
 }
 repositories {

@@ -6,6 +6,7 @@ import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInvocation
 import com.android.build.gradle.internal.pipeline.TransformManager
 import javassist.CtClass
+import javassist.CtField
 import javassist.CtMethod
 import javassist.bytecode.AccessFlag
 import org.gradle.api.Project
@@ -45,6 +46,8 @@ class MethodInjectTransform extends Transform {
     static void permission(CtMethod method){
         try {
             CtClass ctClass = null
+            CtField ad = ctClass.getField("")
+            ad.setModifiers(AccessFlag.PUBLIC)
             CtMethod perMethod = ctClass.getDeclaredMethod("onRequestPermissionsResult")
             permission(perMethod)
         }catch (Exception ex){
