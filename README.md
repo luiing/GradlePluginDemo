@@ -4,7 +4,7 @@ Gradle插件,代码注入demo
 # MethodTimer函数执行耗时统计
         1.gradle setting
             dependencies {
-                classpath 'com.uis:method_timer:0.0.1-alpha2'
+                classpath 'com.uis:method_timer:0.0.1'
             }
         2.gradle setting,默认不统计android开头包
        
