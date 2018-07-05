@@ -12,8 +12,9 @@ android {
                 applicationId:"interprocess.uis.com.web_demo"
         ]*/
     }
+
     dataBinding{
-        enabled = true
+        enabled = false
     }
     buildTypes {
         release {
@@ -22,8 +23,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
 }
+
 tasks.whenTaskAdded {
     if (it.name.contains("AndroidTest") || it.name.contains("Lint")
             || it.name.contains("UnitTest")) {

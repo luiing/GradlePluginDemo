@@ -1,6 +1,8 @@
 # GradlePluginDemo
 Gradle插件,代码注入demo
 
+## 配置版本 com.android.tools.build:gradle:3.0.0
+
 # MethodTimer函数执行耗时统计
         1.gradle setting
             dependencies {

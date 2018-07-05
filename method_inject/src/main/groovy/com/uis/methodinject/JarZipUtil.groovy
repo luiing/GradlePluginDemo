@@ -1,6 +1,5 @@
 package com.uis.methodinject;
 
-import java.util.jar.JarEntry
 import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.zip.Deflater
@@ -12,32 +11,15 @@ import java.util.zip.ZipEntry
  */
 class JarZipUtil {
 
-    static boolean unzipJar(String jarPath, String destDirPath){
-        unzipJar(jarPath,destDirPath,null)
-    }
     /**
      * 将该jar包解压到指定目录
      * @param jarPath jar包路径
      * @param destDirPath jar包解压后路径
      * @return isExclude
      */
-    static boolean unzipJar(String jarPath, String destDirPath,String exclude) {
+    static boolean unzipJar(String jarPath, String destDirPath) {
         if (jarPath.endsWith('.jar')) {
             JarFile jarFile = new JarFile(jarPath)
-            if(exclude!=null && !exclude.empty){
-                def entries = jarFile.entries()
-                if(entries.hasMoreElements()){
-                    String[] excludes = exclude.split("\\,")
-                    int size = excludes.length
-                    JarEntry excludeJar = entries.nextElement()
-                    String jarName = excludeJar.name.replace("/",".")
-                    for(int i=0;i<size;i++){
-                        if(jarName.startsWith(excludes[i])){
-                            return true
-                        }
-                    }
-                }
-            }
             jarFile.entries().each {jarEntry->
                 if(!jarEntry.directory) {
                     def outFile = new File(destDirPath, jarEntry.name)

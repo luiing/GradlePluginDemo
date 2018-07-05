@@ -20,7 +20,7 @@ class MethodInjectTransform extends Transform {
 
     @Override
     String getName() {
-        return "AutoPermissionTransform"
+        return "MethodInjectTransform"
     }
 
     @Override

@@ -9,7 +9,6 @@ dependencies {
     compile 'org.javassist:javassist:3.22.0-GA'
     compile 'com.android.tools.build:transform-api:1.5.0'
 }
-
 repositories{
     jcenter()
     mavenCentral()
@@ -29,7 +28,7 @@ uploadArchives {
 Properties propLocal = new Properties()
 propLocal.load(project.rootProject.file('local.properties').newDataInputStream())
 
-version="0.0.3"
+version="0.0.5"
 group=propLocal.getProperty("bintray.group")
 
 install {

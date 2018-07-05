@@ -14,8 +14,8 @@ buildscript {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         //本地未发布先注释，同时注释web-demo中的 plugin
         //classpath 'com.uis.methodinject:MethodInject:0.0.1-SNAPSHOT'
-        classpath 'com.uis.methodtimer:MethodTimer:0.0.1-SNAPSHOT'
-        //classpath 'com.uis:method_timer:0.0.3'
+        //classpath 'com.uis.methodtimer:MethodTimer:0.0.1-SNAPSHOT'
+        classpath 'com.uis:method_timer:0.0.4'
         classpath 'com.jakewharton:butterknife-gradle-plugin:8.5.1'
     }
 }

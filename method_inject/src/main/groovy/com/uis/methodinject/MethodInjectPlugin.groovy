@@ -9,8 +9,5 @@ class MethodInjectPlugin implements Plugin<Project> {
         if(project.hasProperty("android")){
             project.android.registerTransform(new MethodInjectTransform(project))
         }
-        project.task("methodInject")<<{
-
-        }
     }
 }
