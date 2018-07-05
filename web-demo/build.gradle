@@ -13,8 +13,8 @@ android {
         ]*/
     }
 
-    signingConfigs {
-
+    dataBinding{
+        enabled = false
     }
     buildTypes {
         release {
@@ -23,8 +23,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
 }
+
 tasks.whenTaskAdded {
     if (it.name.contains("AndroidTest") || it.name.contains("Lint")
             || it.name.contains("UnitTest")) {
@@ -45,10 +48,67 @@ dependencies {
 
 apply plugin: 'com.uis.methodtimer'
 methodTimer{
-    exclude 'interprocess.uis.com.web_demo.vassonic,interprocess.uis.com.web_demo.PermissionProxy'
+    exclude 'interprocess.uis.com.web_demo.PermissionProxy'
     isMain false
-    timeout 5
+    enableJar true
+    enableLog true
+    timeout 50
 }
 
 //apply plugin: 'com.uis.methodinject'
+apply plugin: 'com.jakewharton.butterknife'
+
+task("regTask").doLast {
+    def patten = "android.support.compat.R\$attr.class"
+    def reg = ".*\\.[A-Z]{0,1}R.{0,1}|.*\\.R.{0,1}\\\$.*|.*\\.BuildConfig\"".toString()
+    println(patten.matches(reg))
+    reg = "\\.class"
+    def reg1 = "\\\\"
+    println("result="+patten.replaceAll(reg,"").replaceAll(reg1,"."))
+
+}
+
+class TimingsListener implements TaskExecutionListener, BuildListener {
+    private Clock clock
+    private timings = []
+
+    @Override
+    void beforeExecute(Task task) {
+        clock = new org.gradle.util.Clock()
+    }
+
+    @Override
+    void afterExecute(Task task, TaskState taskState) {
+        def ms = clock.timeInMs
+        timings.add([ms, task.path])
+        task.project.logger.warn "${task.path} took ${ms}ms"
+    }
+
+    @Override
+    void buildFinished(BuildResult result) {
+        println result.action+"#Task timings:"
+        for (timing in timings) {
+            if (timing[0] >= 50) {
+                printf "%7sms  %s\n", timing
+            }
+        }
+    }
+
+    @Override
+    void buildStarted(Gradle gradle) {}
+
+    @Override
+    void projectsEvaluated(Gradle gradle) {}
+
+    @Override
+    void projectsLoaded(Gradle gradle) {}
+
+    @Override
+    void settingsEvaluated(Settings settings) {}
+
+
+}
+
+//gradle.addListener new TimingsListener()
+
 

@@ -11,82 +11,110 @@ import javassist.NotFoundException
 import javassist.bytecode.AccessFlag
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
-import org.gradle.api.Project;
+import org.gradle.api.Project
 
 class InjectUtil {
-    ClassPool pool = ClassPool.getDefault()
-    List<ClassPath> paths = new ArrayList<>()
-    String excludes = "android,"//包名
+    ClassPool pool = new ClassPool(true)
+    HashSet<ClassPath> paths = new HashSet()
+    HashSet<String> jarChangedPaths = new HashSet()//未插入代码jar不需要重新打包
+    String regexDirMatch
+    String regexFileMatch = ".*\\.[A-Z]{0,1}R.{0,1}|.*\\.R.{0,1}\\\$.*|.*\\.BuildConfig"//R2,R,BR,R$xx,BuildConfig
     MethodTimerExtension ext
-    String TAG = "com.uis.MethodTimer"
+    static String TAG = "com.uis.MethodTimer"
 
     InjectUtil(Project project,MethodTimerExtension ext) {
+        def regexBuilder = new StringBuilder("android.*|${TAG}.*")
         if(ext.exclude != null && !ext.exclude.empty){
-            excludes += ext.exclude
+            ext.exclude.split("\\,").each {
+                regexBuilder.append("|").append(it).append(".*")
+            }
         }
+        regexDirMatch = regexBuilder.toString()
         this.ext = ext
         pool.appendClassPath(project.android.bootClasspath[0].toString())
-        println("-----exclude-----"+excludes)
     }
 
     void injectClass(String path){
         paths.add(pool.appendClassPath(path))
         File dir = new File(path)
-        String[] excludeClass = excludes.split("\\,")
-        int excludeSize = excludeClass.length
-        try {
-            if (dir.isDirectory()) {
-                dir.eachFileRecurse { File file ->
-                    if (file.file && file.path.endsWith(".class") && !file.path.contains("R\$") && !file.path.contains("R.class") && !file.path.contains("BuildConfig.class")) {
-                        String className = file.path.replace(dir.path+File.separator,"")
-                        className = className.replace(".class","")
-                        className = className.replace(File.separator,".")
-                        boolean  isExclude = false
-                        for(int i=0;i<excludeSize;i++){
-                            if(className.startsWith(TAG) || className.startsWith(excludeClass[i])) {
-                                isExclude = true
-                                break
-                            }
-                        }
-                        if(!isExclude) {
-                            CtClass ctClass = pool.getCtClass(className)
-                            if (ctClass.isFrozen()) {
-                                ctClass.defrost()
-                            }
-                            ctClass.getDeclaredMethods().each { method ->
-                                try {
-                                    if (method.methodInfo.codeAttribute != null && !method.name.startsWith("access\$")) {
-                                        insertMehodTimer(ctClass, method)
-                                    }
-                                } catch (Exception ex) {
-                                    println(TAG+"###"+ex.message)
-                                }
-                            }
-                            ctClass.writeFile(path)
-                            ctClass.detach()
-                        }
-                    }
+        if(!dir.directory)return
+        loopFile(path,dir)
+    }
+
+    void loopFile(final String path,File file){
+        def fileName = file.absolutePath as String
+        if(file.directory){
+            String dirName = fileName.replaceAll("${path}${File.separator}","")
+            if(!dirName.matches(regexDirMatch)){
+                file.eachFile {
+                    loopFile(path,it)
                 }
             }
-        }catch (Throwable ex){
-            ex.printStackTrace()
+        }else{
+            if(fileName.endsWith(".class")){//正则替换成com.tencent.sdk.User
+                String className = fileName.replaceAll("${path}${File.separator}|.class","")
+                                         .replaceAll("${File.separator}",".")
+                if(!className.matches(regexFileMatch) && !className.matches(regexDirMatch)){
+                    if(ext.enableLog) println("classname="+className)
+                    insertTimerCode(path,className)
+                }
+                if(!jarChangedPaths.contains(path)) {
+                    jarChangedPaths.add(path)
+                }
+            }
         }
     }
 
-    String injectJarClass(String path){
-        if(path.endsWith(".jar")) {
-            File jarFile = new File(path)
-            String jarDir = jarFile.parent + File.separator + jarFile.name.replace(".jar", "")
-            if (!JarZipUtil.unzipJar(path, jarDir,excludes)) {
-                injectClass(jarDir)
-                def build = new StringBuilder(path.replace(".jar", ""))
-                build.append("_").append(System.currentTimeMillis()).append(".jar")
-                path = build.toString();
-                JarZipUtil.zipJar(jarDir, build.toString())
-                FileUtils.deleteDirectory(new File(jarDir))
+    void insertTimerCode(String path,String className){//format is: android.app.*
+        try {
+            CtClass ctClass = pool.getCtClass(className)
+            if (ctClass.isFrozen()) {
+                ctClass.defrost()
             }
+            ctClass.getDeclaredMethods().each { method ->
+                try {
+                    if (method.methodInfo.codeAttribute != null && !method.name.startsWith("access\$")) {
+                        insertMehodTimer(ctClass, method)
+                    }
+                } catch (Exception ex) {
+                    println(TAG + "###insertMethodTimer###" + ex.message)
+                }
+            }
+            ctClass.writeFile(path)
+            ctClass.detach()
+        }catch (Exception ex){
+            println(TAG + "===insertTimerCode###" + ex.message)
         }
-        return path
+    }
+
+    void unzipJarClass(String path){
+        if(path.endsWith(".jar")) {
+            def jarDir = path.replace(".jar", "")
+            JarZipUtil.unzipJar(path, jarDir)
+            pool.appendClassPath(jarDir)
+        }
+    }
+
+    void zipJarClass(String path,File desFile){
+        def jarDir = path.replace(".jar", "")
+        def des = path
+        if(ext.enableJar && jarChangedPaths.contains(path)) {
+            des = jarDir + "_" + System.currentTimeMillis() + ".jar"
+            JarZipUtil.zipJar(jarDir, des)
+        }
+        FileUtils.deleteDirectory(new File(jarDir))
+        def srcFile = new File(des)
+        FileUtils.copyFile(srcFile, desFile)
+        if(!des.equals(path)) {
+            srcFile.delete()
+        }
+    }
+
+    void injectJarClass(String path){
+        if(path.endsWith(".jar")) {
+            String jarDir = path.replace(".jar", "")
+            injectClass(jarDir)
+        }
     }
 
     void release(){
@@ -96,6 +124,9 @@ class InjectUtil {
                 pool.removeClassPath(it)
             }
         }catch (Exception ex){}
+        paths.clear()
+        jarChangedPaths.clear()
+        pool = null
     }
 
     void insertMehodTimer(CtClass clas, CtMethod method) throws Exception {

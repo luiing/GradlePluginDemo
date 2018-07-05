@@ -22,7 +22,7 @@ public class PermissionProxy{
         void onResult(boolean success,int requestCode,@NonNull List<String> allow,@NonNull List<String> deny);
     }
 
-    static ArrayMap<Activity,OnPermissionResult> callMap = new ArrayMap<>();
+    static ArrayMap<Activity,OnPermissionResult> callMap = new ArrayMap();
 
 
     static AtomicInteger code = new AtomicInteger(701);
@@ -38,8 +38,8 @@ public class PermissionProxy{
     public static void resultPermission(Activity act,int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
         OnPermissionResult result = callMap.get(act);
         if(result != null){
-            List<String> allow = new ArrayList<>();
-            List<String> deny = new ArrayList<>();
+            List<String> allow = new ArrayList();
+            List<String> deny = new ArrayList();
             for(int i=0,size=permissions.length;i<size;i++){
                 if(-1 == grantResults[i]){//deny
                     deny.add(permissions[i]);
@@ -54,7 +54,7 @@ public class PermissionProxy{
 
     public static void requestPermission(Activity act,int requestCode, String[] permissions,OnPermissionResult result){
         if(result != null && permissions != null && permissions.length>0) {
-            ArrayList<String> array = new ArrayList<>();
+            ArrayList<String> array = new ArrayList();
             for(String per : permissions) {
                 if(-1 == ActivityCompat.checkSelfPermission(act, per)){//deny
                     array.add(per);
