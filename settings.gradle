@@ -1,0 +1,11 @@
+Properties propModules = new Properties()
+Properties propLocal = new Properties()
+propModules.load(new File("modules.properties").newDataInputStream())
+propLocal.load(new File("local.properties").newDataInputStream())
+
+propModules.each{
+    if("false" != propLocal.getProperty(it.key)) {
+        include ":${it.key}"
+    }
+}
+
