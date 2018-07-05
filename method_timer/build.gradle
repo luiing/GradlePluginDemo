@@ -29,7 +29,7 @@ uploadArchives {
 Properties propLocal = new Properties()
 propLocal.load(project.rootProject.file('local.properties').newDataInputStream())
 
-version="0.0.1"
+version="0.0.3"
 group=propLocal.getProperty("bintray.group")
 
 install {

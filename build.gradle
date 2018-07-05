@@ -3,6 +3,8 @@ buildscript {
     repositories {
         jcenter()
         google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
         maven{
             url uri('./repo')
         }
@@ -10,10 +12,11 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         //本地未发布先注释，同时注释web-demo中的 plugin
         //classpath 'com.uis.methodinject:MethodInject:0.0.1-SNAPSHOT'
         classpath 'com.uis.methodtimer:MethodTimer:0.0.1-SNAPSHOT'
+        //classpath 'com.uis:method_timer:0.0.3'
+        classpath 'com.jakewharton:butterknife-gradle-plugin:8.5.1'
     }
 }
 
