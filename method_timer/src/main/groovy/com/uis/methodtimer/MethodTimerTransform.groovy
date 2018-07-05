@@ -42,42 +42,50 @@ class MethodTimerTransform extends Transform {
     @Override
     void transform(TransformInvocation invocation) throws TransformException, InterruptedException, IOException {
         long startTime = System.currentTimeMillis()
-        InjectUtil inject = new InjectUtil(project,project.methodTimer as MethodTimerExtension)
+        def ext = project.methodTimer as MethodTimerExtension
+        InjectUtil inject = new InjectUtil(project,ext)
         DirectoryInput dir
-        List<JarInput> jar = new ArrayList<>()
+        HashSet<JarInput> jar = new HashSet()
         invocation.inputs.each {input->
             input.directoryInputs.each {
-                println("dir="+it.file.absolutePath)
                 if(dir == null && it.file != null)
                     dir = it
             }
             input.jarInputs.each {
-                println("jar="+it.file.absolutePath)
                 jar.add(it)
             }
         }
-        while(dir == null){
-        }
         inject.initMethodTimer(dir.file.absolutePath)
-        //jar inject
+
+        //jar unzip all files
         jar.each {
             def s = System.currentTimeMillis()
-            def newJarFile = new File(inject.injectJarClass(it.file.absolutePath))
-            def newName = it.name.replace(".jar","")+DigestUtils.md5Hex(it.file.absolutePath)
-            def des = invocation.outputProvider.getContentLocation(newName,it.contentTypes, it.scopes, Format.JAR)
-            FileUtils.copyFile(it.file, des)
-            if(!it.file.path.equalsIgnoreCase(newJarFile.path)) {
-                newJarFile.delete()
+            inject.unzipJarClass(it.file.absolutePath)
+            if(ext.enableLog) println("---jarunzip---"+it.file.absolutePath+"\n### cost="+(System.currentTimeMillis()-s))
+        }
+        //jar inject
+        if(ext.enableJar) {
+            jar.each {
+                def s = System.currentTimeMillis()
+                inject.injectJarClass(it.file.absolutePath)
+                if(ext.enableLog) println("---jarInputs---" + it.file.path + ",### cost=" + (System.currentTimeMillis() - s))
             }
-            println("---jarInputs---"+it.file.path+",###"+des.path+"\njarInputs cost="+(System.currentTimeMillis()-s))
         }
         //directory inject
         def st = System.currentTimeMillis()
         inject.injectClass(dir.file.absolutePath)
         def dest = invocation.outputProvider.getContentLocation(dir.name,dir.contentTypes,dir.scopes, Format.DIRECTORY)
         FileUtils.copyDirectory(dir.file,dest)
-        println("---dirInputs---"+dir.file.absolutePath+",###"+dest.path+"\ndirInputs cost="+(System.currentTimeMillis()-st))
+        if(ext.enableLog) println("---dirInputs---"+dir.file.absolutePath+",### cost="+(System.currentTimeMillis()-st))
 
+        //jar zip all files
+        jar.each {
+            def s = System.currentTimeMillis()
+            def newName = it.name.replace(".jar","")+DigestUtils.md5Hex(it.name)
+            def desFile = invocation.outputProvider.getContentLocation(newName,it.contentTypes, it.scopes, Format.JAR)
+            inject.zipJarClass(it.file.absolutePath,desFile)
+            if(ext.enableLog) println("---jarzip---"+it.file.absolutePath+"\n${desFile.path}"+"\n### cost="+(System.currentTimeMillis()-s))
+        }
         inject.release()
         project.logger.quiet("------${getName()}costtime-----"+(System.currentTimeMillis()-startTime)+"ms")
     }

@@ -8,13 +8,9 @@ android {
         targetSdkVersion targetVer
         versionCode 1
         versionName "1.0"
-        /*manifestPlaceholders = [
-                applicationId:"interprocess.uis.com.web_demo"
-        ]*/
     }
-
-    signingConfigs {
-
+    dataBinding{
+        enabled = false
     }
     buildTypes {
         release {
@@ -23,8 +19,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
 }
+
 tasks.whenTaskAdded {
     if (it.name.contains("AndroidTest") || it.name.contains("Lint")
             || it.name.contains("UnitTest")) {
@@ -37,18 +33,74 @@ repositories {
     }
 }
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:'+supportVer
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:' + supportVer
     compile 'com.tencent.sonic:sdk:3.0.0'
     compile(name: 'WebLib-1.1.3', ext: 'aar')
 }
 
 apply plugin: 'com.uis.methodtimer'
 methodTimer{
-    exclude 'interprocess.uis.com.web_demo.vassonic,interprocess.uis.com.web_demo.PermissionProxy'
+    exclude 'interprocess.uis.com.web_demo.PermissionProxy'
     isMain false
-    timeout 5
+    enableJar true
+    enableLog true
+    timeout 50
 }
 
 //apply plugin: 'com.uis.methodinject'
+apply plugin: 'com.jakewharton.butterknife'
+
+task("regTask").doLast {
+    def patten = new File("./").absolutePath
+
+    def reg = File.separator
+    println(patten)
+    println(reg)
+    println("result="+patten.replace(reg,"."))
+}
+
+class TimingsListener implements TaskExecutionListener, BuildListener {
+    private Clock clock
+    private timings = []
+
+    @Override
+    void beforeExecute(Task task) {
+        clock = new org.gradle.util.Clock()
+    }
+
+    @Override
+    void afterExecute(Task task, TaskState taskState) {
+        def ms = clock.timeInMs
+        timings.add([ms, task.path])
+        task.project.logger.warn "${task.path} took ${ms}ms"
+    }
+
+    @Override
+    void buildFinished(BuildResult result) {
+        println result.action+"#Task timings:"
+        for (timing in timings) {
+            if (timing[0] >= 50) {
+                printf "%7sms  %s\n", timing
+            }
+        }
+    }
+
+    @Override
+    void buildStarted(Gradle gradle) {}
+
+    @Override
+    void projectsEvaluated(Gradle gradle) {}
+
+    @Override
+    void projectsLoaded(Gradle gradle) {}
+
+    @Override
+    void settingsEvaluated(Settings settings) {}
+
+
+}
+
+//gradle.addListener new TimingsListener()
+
 
