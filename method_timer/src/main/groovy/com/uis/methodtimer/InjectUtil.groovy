@@ -44,7 +44,7 @@ class InjectUtil {
     void loopFile(final String path,File file){
         def fileName = file.absolutePath as String
         if(file.directory){
-            String dirName = fileName.replaceAll("${path}${File.separator}","")
+            String dirName = fileName.replace(path+File.separator,"")
             if(!dirName.matches(regexDirMatch)){
                 file.eachFile {
                     loopFile(path,it)
@@ -52,8 +52,9 @@ class InjectUtil {
             }
         }else{
             if(fileName.endsWith(".class")){//正则替换成com.tencent.sdk.User
-                String className = fileName.replaceAll("${path}${File.separator}|.class","")
-                                         .replaceAll("${File.separator}",".")
+                String className = fileName.replace(path+File.separator,"")
+                                            .replace(".class","")
+                                         .replace(File.separator,".")
                 if(!className.matches(regexFileMatch) && !className.matches(regexDirMatch)){
                     if(ext.enableLog) println("classname="+className)
                     insertTimerCode(path,className)
