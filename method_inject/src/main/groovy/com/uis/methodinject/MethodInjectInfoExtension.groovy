@@ -1,7 +1,28 @@
 package com.uis.methodinject
 
 class MethodInjectInfoExtension {
-    String methodName = ""//插入函数名
-    String methodParam = "\$\$"//函数参数$0表示this,$1第一个参数,$$表示全部
-    String exclude = ""//排除包名或类
+    String name//nameDomain
+    String include
+    String exclude
+
+    String interfaces//注入实现此接口方法
+
+    String descriptor
+    String fields
+    String constructor//body
+    String methodName
+    String methodBefor
+    String methodAfter
+
+
+    //代码支持注入到:构造函数,函数,类子段
+
+    MethodInjectInfoExtension(String name) {
+        this.name = name
+    }
+
+    def name(String name){
+        this.name = name
+    }
+
 }
