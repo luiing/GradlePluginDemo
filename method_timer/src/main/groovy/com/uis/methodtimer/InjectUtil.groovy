@@ -44,7 +44,7 @@ class InjectUtil {
     void loopFile(final String path,File file){
         def fileName = file.absolutePath as String
         if(file.directory){
-            String dirName = fileName.replaceAll("${path}${File.separator}","")
+            String dirName = fileName.replace(path+File.separator,"")
             if(!dirName.matches(regexDirMatch)){
                 file.eachFile {
                     loopFile(path,it)
@@ -52,14 +52,15 @@ class InjectUtil {
             }
         }else{
             if(fileName.endsWith(".class")){//正则替换成com.tencent.sdk.User
-                String className = fileName.replaceAll("${path}${File.separator}|.class","")
-                                         .replaceAll("${File.separator}",".")
+                String className = fileName.replace(path+File.separator,"")
+                                            .replace(".class","")
+                                         .replace(File.separator,".")
                 if(!className.matches(regexFileMatch) && !className.matches(regexDirMatch)){
                     if(ext.enableLog) println("classname="+className)
                     insertTimerCode(path,className)
-                }
-                if(!jarChangedPaths.contains(path)) {
-                    jarChangedPaths.add(path)
+                    if(!jarChangedPaths.contains(path)) {
+                        jarChangedPaths.add(path)
+                    }
                 }
             }
         }
@@ -71,17 +72,19 @@ class InjectUtil {
             if (ctClass.isFrozen()) {
                 ctClass.defrost()
             }
-            ctClass.getDeclaredMethods().each { method ->
-                try {
-                    if (method.methodInfo.codeAttribute != null && !method.name.startsWith("access\$")) {
-                        insertMehodTimer(ctClass, method)
+            if(!ctClass.isInterface()) {
+                ctClass.getDeclaredMethods().each { method ->
+                    try {
+                        if (method.methodInfo.codeAttribute != null && !method.name.startsWith("access\$") && !method.empty) {
+                            insertMehodTimer(ctClass, method)
+                        }
+                    } catch (Exception ex) {
+                        println(TAG + "###insertMethodTimer###" + ex.message)
                     }
-                } catch (Exception ex) {
-                    println(TAG + "###insertMethodTimer###" + ex.message)
                 }
+                ctClass.writeFile(path)
+                ctClass.detach()
             }
-            ctClass.writeFile(path)
-            ctClass.detach()
         }catch (Exception ex){
             println(TAG + "===insertTimerCode###" + ex.message)
         }
@@ -98,7 +101,7 @@ class InjectUtil {
     void zipJarClass(String path,File desFile){
         def jarDir = path.replace(".jar", "")
         def des = path
-        if(ext.enableJar && jarChangedPaths.contains(path)) {
+        if(ext.enableJar && jarChangedPaths.contains(jarDir)) {
             des = jarDir + "_" + System.currentTimeMillis() + ".jar"
             JarZipUtil.zipJar(jarDir, des)
         }
@@ -130,7 +133,7 @@ class InjectUtil {
     }
 
     void insertMehodTimer(CtClass clas, CtMethod method) throws Exception {
-        if(0 == AccessFlag.ABSTRACT.and(method.modifiers).intValue()) {
+        if(0 == AccessFlag.ABSTRACT.and(method.modifiers).intValue()) {//过滤abstract方法
             String className = clas.name
             String methodName = method.name
             String key = DigestUtils.md5Hex(className + methodName + method.hashCode())
@@ -144,10 +147,12 @@ class InjectUtil {
         try{//pool exists class,then wirte to path
             [TAG,"com.uis.MethodTimerEntity"].each {
                 CtClass ctClass = pool.getCtClass(it)
-                if (ctClass != null && ctClass.isFrozen()) {//pool exist the file
-                    ctClass.defrost()
+                if (ctClass != null) {//pool exist the file
+                    if(ctClass.isFrozen()){
+                        ctClass.defrost()
+                    }
+                    ctClass.writeFile(path)
                 }
-                ctClass.writeFile(path)
             }
             return
         }catch (NotFoundException ex){

@@ -9,7 +9,6 @@ dependencies {
     compile 'org.javassist:javassist:3.22.0-GA'
     compile 'com.android.tools.build:transform-api:1.5.0'
 }
-
 repositories{
     jcenter()
     mavenCentral()
@@ -29,20 +28,17 @@ uploadArchives {
 Properties propLocal = new Properties()
 propLocal.load(project.rootProject.file('local.properties').newDataInputStream())
 
-version="0.0.3"
+version="0.1.1"
 group=propLocal.getProperty("bintray.group")
 
 install {
     repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
         pom {
             project {
                 packaging 'jar'
                 name propLocal.getProperty("bintray.mehtod_timer")
                 description propLocal.getProperty("bintray.mehtod_timer")
-                // #CONFIG# // project title
                 url propLocal.getProperty('bintray.mehtod_timer.url')
-                // Set your license
                 licenses {
                     license {
                         name 'The Apache Software License, Version 2.0'
@@ -51,12 +47,9 @@ install {
                 }
                 developers {
                     developer {
-                        id  propLocal.getProperty('bintray.id')//org unique id
-                        // #CONFIG# // your user id (you can write your nickname)
-                        name propLocal.getProperty('bintray.name')//current user id
-                        // #CONFIG# // your user name
+                        id  propLocal.getProperty('bintray.id')
+                        name propLocal.getProperty('bintray.name')
                         email ""
-                        // #CONFIG# // your email
                     }
                 }
                 scm {

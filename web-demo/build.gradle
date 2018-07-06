@@ -8,12 +8,9 @@ android {
         targetSdkVersion targetVer
         versionCode 1
         versionName "1.0"
-        /*manifestPlaceholders = [
-                applicationId:"interprocess.uis.com.web_demo"
-        ]*/
     }
     dataBinding{
-        enabled = true
+        enabled = false
     }
     buildTypes {
         release {
@@ -22,8 +19,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
 }
+
 tasks.whenTaskAdded {
     if (it.name.contains("AndroidTest") || it.name.contains("Lint")
             || it.name.contains("UnitTest")) {
@@ -36,10 +33,11 @@ repositories {
     }
 }
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:'+supportVer
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:' + supportVer
     compile 'com.tencent.sonic:sdk:3.0.0'
     compile(name: 'WebLib-1.1.3', ext: 'aar')
+    compile project(':lib-demo')
 }
 
 apply plugin: 'com.uis.methodtimer'
@@ -55,13 +53,12 @@ methodTimer{
 apply plugin: 'com.jakewharton.butterknife'
 
 task("regTask").doLast {
-    def patten = "android.support.compat.R\$attr.class"
-    def reg = ".*\\.[A-Z]{0,1}R.{0,1}|.*\\.R.{0,1}\\\$.*|.*\\.BuildConfig\"".toString()
-    println(patten.matches(reg))
-    reg = "\\.class"
-    def reg1 = "\\\\"
-    println("result="+patten.replaceAll(reg,"").replaceAll(reg1,"."))
+    def patten = new File("./").absolutePath
 
+    def reg = File.separator
+    println(patten)
+    println(reg)
+    println("result="+patten.replace(reg,"."))
 }
 
 class TimingsListener implements TaskExecutionListener, BuildListener {
