@@ -61,22 +61,22 @@ class MethodTimerTransform extends Transform {
         jar.each {
             def s = System.currentTimeMillis()
             inject.unzipJarClass(it.file.absolutePath)
-            if(ext.enableLog) println("---jarunzip---"+it.file.absolutePath+"\n### cost="+(System.currentTimeMillis()-s))
+            println("---jarunzip---"+it.file.absolutePath+"\n### cost="+(System.currentTimeMillis()-s))
         }
         //jar inject
         if(ext.enableJar) {
             jar.each {
                 def s = System.currentTimeMillis()
                 inject.injectJarClass(it.file.absolutePath)
-                if(ext.enableLog) println("---jarInputs---" + it.file.path + ",### cost=" + (System.currentTimeMillis() - s))
+                println("---jarInputs---" + it.file.path + ",### cost=" + (System.currentTimeMillis() - s))
             }
         }
-        //directory inject
+        //directory inject,保证所有jar加入到ClassPool在开始注入
         def st = System.currentTimeMillis()
         inject.injectClass(dir.file.absolutePath)
         def dest = invocation.outputProvider.getContentLocation(dir.name,dir.contentTypes,dir.scopes, Format.DIRECTORY)
         FileUtils.copyDirectory(dir.file,dest)
-        if(ext.enableLog) println("---dirInputs---"+dir.file.absolutePath+",### cost="+(System.currentTimeMillis()-st))
+        println("---dirInputs---"+dir.file.absolutePath+",### cost="+(System.currentTimeMillis()-st))
 
         //jar zip all files
         jar.each {
@@ -84,9 +84,9 @@ class MethodTimerTransform extends Transform {
             def newName = it.name.replace(".jar","")+DigestUtils.md5Hex(it.name)
             def desFile = invocation.outputProvider.getContentLocation(newName,it.contentTypes, it.scopes, Format.JAR)
             inject.zipJarClass(it.file.absolutePath,desFile)
-            if(ext.enableLog) println("---jarzip---"+it.file.absolutePath+"\n${desFile.path}"+"\n### cost="+(System.currentTimeMillis()-s))
+            println("---jarzip---"+it.file.absolutePath+"\n${desFile.path}"+"\n### cost="+(System.currentTimeMillis()-s))
         }
         inject.release()
-        project.logger.quiet("------${getName()}costtime-----"+(System.currentTimeMillis()-startTime)+"ms")
+        println("------${getName()}costtime-----"+(System.currentTimeMillis()-startTime)+"ms")
     }
 }
